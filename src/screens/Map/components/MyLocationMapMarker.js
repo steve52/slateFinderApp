@@ -67,9 +67,8 @@ export default class MyLocationMapMarker extends PureComponent{
   watchLocation() {
     // eslint-disable-next-line no-undef
     this.watchID = Geolocation.watchPosition((position) => {
-      const myLastPosition = this.state.myPosition;
-      const myPosition = position.coords;
-      console.log('myPosition', myPosition)
+      const myLastPosition = this.state.myPosition || {};
+      const myPosition = position.coords || {};
       if (!isEqual(myPosition, myLastPosition)) {
         this.setState({ myPosition });
       }

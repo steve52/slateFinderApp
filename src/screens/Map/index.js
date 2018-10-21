@@ -6,6 +6,21 @@ import {
 } from 'react-native';
 import Map from './components/MapView';
 import Geolocation from 'react-native-geolocation-service';
+import { Provider } from 'react-redux'
+import fetch from 'cross-fetch';
+
+import {
+  geolocationSuccess,
+  geolocationFailure,
+  fetchLocationsRequest,
+  fetchLocationsSuccess,
+  fetchLocationsFailure
+} from '../../actions';
+
+import { createStore } from 'redux';
+import rootReducer from '../../reducers';
+const store = createStore(rootReducer);
+console.log('initial state', store.getState());
 
 export default class MapScreen extends Component {
   watchId = null;
@@ -16,7 +31,7 @@ export default class MapScreen extends Component {
     location: {}
   };
 
-  hasLocationPermission = async () => {
+  _hasLocationPermission = async () => {
     if (Platform.OS === 'ios' ||
         (Platform.OS === 'android' && Platform.Version < 23)) {
       return true;
@@ -43,45 +58,20 @@ export default class MapScreen extends Component {
     return false;
   }
 
-  getLocationUpdates = async () => {
-    const hasLocationPermission = await this.hasLocationPermission();
-
-    if (!hasLocationPermission) return;
-
-    this.setState({ updatesEnabled: true }, () => {
-      this.watchId = Geolocation.watchPosition(
-        (position) => {
-          this.setState({ location: position });
-          console.log('Updated Position: ', position);
-        },
-        (error) => {
-          this.setState({ location: error });
-          console.log(error);
-        },
-        { enableHighAccuracy: true, distanceFilter: 0, interval: 5000, fastestInterval: 2000 }
-      );
-    });
-  }
-
-  removeLocationUpdates = () => {
-    if (this.watchId !== null) {
-        Geolocation.clearWatch(this.watchId);
-        this.setState({ updatesEnabled: false })
-    }
-  }
-
-  getLocation = async () => {
-    const hasLocationPermission = await this.hasLocationPermission();
+  _getCurrentPosition = async () => {
+    const hasLocationPermission = await this._hasLocationPermission();
 
     if (!hasLocationPermission) return;
 
     this.setState({ loading: true }, () => {
       Geolocation.getCurrentPosition(
         (position) => {
+          store.dispatch(geolocationSuccess(position));
           this.setState({ location: position, loading: false });
           console.log(position);
         },
         (error) => {
+          store.dispatch(geolocationFailure(error));
           this.setState({ location: error, loading: false });
           console.log(error);
         },
@@ -90,20 +80,41 @@ export default class MapScreen extends Component {
     });
   }
 
+  _getAllLocations() {
+    store.dispatch(fetchLocationsRequest());
+    return fetch('http://192.168.1.15:4000/api/locations', {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      }
+    }).then( response => {
+        return response.json();
+    }).then( data => {
+      store.dispatch(fetchLocationsSuccess(data.data));
+    }).catch( error => {
+      store.dispatch(fetchLocationsFailure(error));
+    })
+  }
+
   componentDidMount() {
-    this.getLocation()
+    this._getCurrentPosition()
       .catch((err) => {
-        console.log('Error getting location');
+        console.log('Error getting current position');
       });
+
+    this._getAllLocations()
+    .catch((err) => {
+      console.log('Error getting locations');
+    });;
   }
 
   render() {
     return (
-      <Map
-        location={this.state.location}
-        loading={this.state.loading}
-        error={this.state.error}
-      />
+      <Provider store={store}>
+        <Map
+          loading={this.state.loading}
+          error={this.state.error}
+        />
+      </Provider>
     );
   }
 }
