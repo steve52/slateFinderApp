@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
+import { Text } from 'react-native';
 import Proptypes from 'prop-types';
-import { Marker } from 'react-native-maps';
+import { Marker, Callout } from 'react-native-maps';
 import { connect } from 'react-redux';
 
 class LocationMarker extends Component {
+
   render() {
     const coordinate = {
       longitude: this.props.location.longitude,
@@ -11,13 +13,22 @@ class LocationMarker extends Component {
     }
     return <Marker
       coordinate={coordinate}
-      title={this.props.location.name}
-    />
+    >
+    <Callout onPress={this.props.onCalloutPress}>
+      <Text>{this.props.location.name}</Text>
+      <Text>{this.props.location.address_line_1}</Text>
+      {this.props.location.address_line_2 &&
+        <Text>{this.props.location.address_line_2}</Text>
+      }
+      <Text>{this.props.location.state}, {this.props.location.city} {this.props.location.zip_code}</Text>
+    </Callout>
+    </Marker>
   }
 }
 
 LocationMarker.prototypes = {
-  id: Proptypes.number.isRequired
+  id: Proptypes.number.isRequired,
+  onCalloutPress: Proptypes.func.isRequired
 }
 
 const mapStateToProps = (state, ownProps) => {

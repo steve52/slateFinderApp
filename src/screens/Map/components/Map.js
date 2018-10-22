@@ -8,14 +8,27 @@ import MapView from 'react-native-maps';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 
-import MyLocationMapMarker from './MyLocationMapMarker';
+import MyLocationMarker from './MyLocationMarker';
 import LocationMarker from './LocationMarker';
 
 const LATITUTDE_DELTA = 0.0922;
 const LONGITUDE_DELTA = 0.0421;
 
 class Map extends Component {
+  constructor (props) {
+    super(props);
+
+    this._onCalloutPress = this._onCalloutPress.bind(this);
+  };
+
+
+  _onCalloutPress(locationId){
+    console.log('ON PRESS')
+    this.props.navigation.navigate('Location', { id: locationId })
+  }
+
   render() {
+    console.log('MAP VIEW this.props.navigation', this.props.navigation)
     // If we know the current position, then use it and render the map, otherwise
     // show a loading or error message
     if (this.props.currentPosition.latitude && this.props.currentPosition.longitude) {
@@ -23,7 +36,11 @@ class Map extends Component {
       let locationMarkers = [];
       if (this.props.locations) {
         locationMarkers = this.props.locations.map((id) => {
-          return <LocationMarker key={id} id={id} />
+          return <LocationMarker
+            key={id}
+            id={id}
+            onCalloutPress={() => this._onCalloutPress(id)}
+          />
         });
       }
       const region = {
@@ -32,13 +49,15 @@ class Map extends Component {
         latitudeDelta: LATITUTDE_DELTA,
         longitudeDelta: LONGITUDE_DELTA,
       }
+
+
       return (
         <MapView
           region={region}
           style={styles.map}
         >
           {locationMarkers}
-          <MyLocationMapMarker />
+          <MyLocationMarker />
         </MapView>
       );
     } else if (this.props.loading) {
