@@ -4,10 +4,10 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import Map from './components/MapView';
+import Map from './components/Map';
 import Geolocation from 'react-native-geolocation-service';
-import { Provider } from 'react-redux'
 import fetch from 'cross-fetch';
+import { connect } from 'react-redux';
 
 import {
   geolocationSuccess,
@@ -17,12 +17,8 @@ import {
   fetchLocationsFailure
 } from '../../actions';
 
-import { createStore } from 'redux';
-import rootReducer from '../../reducers';
-const store = createStore(rootReducer);
-console.log('initial state', store.getState());
 
-export default class MapScreen extends Component {
+class MapScreen extends Component {
   watchId = null;
 
   state = {
@@ -66,12 +62,12 @@ export default class MapScreen extends Component {
     this.setState({ loading: true }, () => {
       Geolocation.getCurrentPosition(
         (position) => {
-          store.dispatch(geolocationSuccess(position));
+          this.props.dispatch(geolocationSuccess(position));
           this.setState({ location: position, loading: false });
           console.log(position);
         },
         (error) => {
-          store.dispatch(geolocationFailure(error));
+          this.props.dispatch(geolocationFailure(error));
           this.setState({ location: error, loading: false });
           console.log(error);
         },
@@ -81,17 +77,17 @@ export default class MapScreen extends Component {
   }
 
   _getAllLocations() {
-    store.dispatch(fetchLocationsRequest());
-    return fetch('http://192.168.1.15:4000/api/locations', {
+    this.props.dispatch(fetchLocationsRequest());
+    return fetch('http://192.168.1.151:4000/api/locations', {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
       }
     }).then( response => {
         return response.json();
     }).then( data => {
-      store.dispatch(fetchLocationsSuccess(data.data));
+      this.props.dispatch(fetchLocationsSuccess(data.data));
     }).catch( error => {
-      store.dispatch(fetchLocationsFailure(error));
+      this.props.dispatch(fetchLocationsFailure(error));
     })
   }
 
@@ -109,12 +105,11 @@ export default class MapScreen extends Component {
 
   render() {
     return (
-      <Provider store={store}>
-        <Map
-          loading={this.state.loading}
-          error={this.state.error}
-        />
-      </Provider>
+      <Map
+        loading={this.state.loading}
+        error={this.state.error}
+        navigation={this.props.navigation}
+      />
     );
   }
 }
@@ -124,3 +119,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
 });
+
+export default connect()(MapScreen)

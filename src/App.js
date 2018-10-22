@@ -1,5 +1,13 @@
+import React, { Component } from 'react';
 import { createStackNavigator } from 'react-navigation';
 import MapScreen from './screens/Map';
+
+import { Provider } from 'react-redux'
+import { createStore } from 'redux';
+import rootReducer from './reducers';
+const store = createStore(rootReducer);
+console.log('initial state', store.getState());
+
 
 const RootStack = createStackNavigator(
   {
@@ -15,4 +23,12 @@ const RootStack = createStackNavigator(
   }
 );
 
-export default RootStack;
+export default class App extends Component {
+  render() {
+    return (
+      <Provider store={store}>
+        <RootStack />
+      </Provider>
+    )
+  }
+};
