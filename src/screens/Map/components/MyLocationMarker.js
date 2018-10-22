@@ -1,5 +1,5 @@
 /*
-  Basically copied from https://github.com/react-community/react-native-maps/blob/master/example/examples/MyLocationMapMarker.js
+  Basically copied from https://github.com/react-community/react-native-maps/blob/master/example/examples/MyLocationMarker.js
 */
 
 import React, { PureComponent } from 'react';
@@ -18,7 +18,7 @@ import Geolocation from 'react-native-geolocation-service';
 const GEOLOCATION_OPTIONS = { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 };
 const ANCHOR = { x: 0.5, y: 0.5 };
 
-const colorOfmyLocationMapMarker = 'blue';
+const colorOfMyLocationMarker = 'blue';
 
 const propTypes = {
   ...Marker.propTypes,
@@ -42,7 +42,7 @@ const defaultProps = {
   geolocationOptions: GEOLOCATION_OPTIONS,
 };
 
-export default class MyLocationMapMarker extends PureComponent{
+export default class MyLocationMarker extends PureComponent{
   constructor(props) {
     super(props);
     this.mounted = false;
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     borderLeftWidth: ARROW_SIZE * 0.75,
     borderTopColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: colorOfmyLocationMapMarker,
+    borderBottomColor: colorOfMyLocationMarker,
     borderLeftColor: 'transparent',
   },
   markerHalo: {
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   marker: {
     justifyContent: 'center',
-    backgroundColor: colorOfmyLocationMapMarker,
+    backgroundColor: colorOfMyLocationMarker,
     width: SIZE,
     height: SIZE,
     borderRadius: Math.ceil(SIZE / 2),
@@ -182,5 +182,5 @@ const styles = StyleSheet.create({
   },
 });
 
-MyLocationMapMarker.propTypes = propTypes;
-MyLocationMapMarker.defaultProps = defaultProps;
+MyLocationMarker.propTypes = propTypes;
+MyLocationMarker.defaultProps = defaultProps;
